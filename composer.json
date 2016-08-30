@@ -1,7 +1,7 @@
 {
   "name": "johnnyfreeman/laravel-custom-relation",
   "type": "library",
-  "description": "A global command line tool for Laravel's Artisan.",
+  "description": "A custom relation for when stock relations aren't enough.",
   "keywords": ["laravel","eloquent", "relation", "relationship"],
   "homepage": "https://github.com/johnnyfreeman/laravel-custom-relation",
   "license": "MIT",
@@ -13,8 +13,14 @@
       "role": "Developer"
     }
   ],
+  "autoload": {
+    "psr-4": {
+      "LaravelCustomRelation\\": "src/"
+    }
+  },
   "require": {
-    "php": ">=5.4"
+    "php": ">=5.6.4",
+    "laravel/framework": "5.2.*"
   },
   "repositories": [
     {
