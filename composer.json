@@ -1,0 +1,25 @@
+{
+  "name": "johnnyfreeman/laravel-custom-relation",
+  "type": "library",
+  "description": "A global command line tool for Laravel's Artisan.",
+  "keywords": ["laravel","eloquent", "relation", "relationship"],
+  "homepage": "https://github.com/johnnyfreeman/laravel-custom-relation",
+  "license": "MIT",
+  "authors": [
+    {
+      "name": "Johnny Freeman",
+      "email": "prsjohnny@gmail.com",
+      "homepage": "http://github.com/johnnyfreeman",
+      "role": "Developer"
+    }
+  ],
+  "require": {
+    "php": ">=5.4"
+  },
+  "repositories": [
+    {
+      "type": "git",
+      "url": "https://github.com/johnnyfreeman/laravel-custom-relation.git"
+    }
+  ]
+}
