@@ -112,4 +112,35 @@ class Custom extends Relation
     {
         return $this->get();
     }
+
+    /**
+     * Execute the query as a "select" statement.
+     *
+     * @param  array  $columns
+     * @return \Illuminate\Database\Eloquent\Collection
+     */
+    public function get($columns = ['*'])
+    {
+        // First we'll add the proper select columns onto the query so it is run with
+        // the proper columns. Then, we will get the results and hydrate out pivot
+        // models with the result of those columns as a separate model relation.
+        $columns = $this->query->getQuery()->columns ? [] : $columns;
+
+        if ($columns == ['*']) {
+            $columns = [$this->related->getTable().'.*'];
+        }
+
+        $builder = $this->query->applyScopes();
+
+        $models = $builder->addSelect($columns)->getModels();
+
+        // If we actually found models we will also eager load any relationships that
+        // have been specified as needing to be eager loaded. This will solve the
+        // n + 1 query problem for the developer and also increase performance.
+        if (count($models) > 0) {
+            $models = $builder->eagerLoadRelations($models);
+        }
+
+        return $this->related->newCollection($models);
+    }
 }
