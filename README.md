@@ -62,7 +62,7 @@ class Permission
 First, make sure your models are using the `HasCustomRelations` trait. Then, define custom relations like this.
 
 ```php
-use LaravelCustomRelation/HasCustomRelations;
+use LaravelCustomRelation\HasCustomRelations;
 
 class User
 {
@@ -99,7 +99,7 @@ class User
 ```
 
 ```php
-use LaravelCustomRelation/HasCustomRelations;
+use LaravelCustomRelation\HasCustomRelations;
 
 class Permission
 {
