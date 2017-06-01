@@ -3,6 +3,7 @@
 namespace LaravelCustomRelation\Relations;
 
 use Closure;
+
 use Illuminate\Database\Eloquent\Relations\Relation;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
@@ -10,6 +11,25 @@ use Illuminate\Database\Eloquent\Model;
 
 class Custom extends Relation
 {
+    /**
+       * Build model dictionary keyed by the relation's foreign key.
+       *
+       * @param  \Illuminate\Database\Eloquent\Collection  $results
+       * @return array
+       */
+      protected function buildDictionary(Collection $results, $models)
+      {
+          // First we will build a dictionary of child models keyed by the foreign key
+          // of the relation so that we will easily and quickly match them to their
+          // parents without having a possibly slow inner loops for every models.
+          $dictionary = [];
+            foreach($models as $model){
+              $dictionary[$model->getKey()] = $results->where($model->getKeyName(), $model->getKey())->toArray();
+            }
+          return $dictionary;
+      }
+
+
     /**
      * The baseConstraints callback
      *
@@ -32,10 +52,12 @@ class Custom extends Relation
      * @param  string  $baseConstraints
      * @return void
      */
-    public function __construct(Builder $query, Model $parent, Closure $baseConstraints, Closure $eagerConstraints)
+    public function __construct(Builder $query, Model $parent, Closure $baseConstraints, Closure $eagerConstraints, array $eagerParentRelations = null)
     {
         $this->baseConstraints = $baseConstraints;
         $this->eagerConstraints = $eagerConstraints;
+        if(isset($eagerParentRelations))
+          $parent->load($eagerParentRelations);
 
         parent::__construct($query, $parent);
     }
@@ -47,7 +69,9 @@ class Custom extends Relation
      */
     public function addConstraints()
     {
+      if (static::$constraints) {
         call_user_func($this->baseConstraints, $this);
+      }
     }
 
     /**
@@ -87,7 +111,7 @@ class Custom extends Relation
      */
     public function match(array $models, Collection $results, $relation)
     {
-        $dictionary = $this->buildDictionary($results);
+        $dictionary = $this->buildDictionary($results, $models);
 
         // Once we have an array dictionary of child objects we can easily match the
         // children back to their parent using the dictionary and the keys on the

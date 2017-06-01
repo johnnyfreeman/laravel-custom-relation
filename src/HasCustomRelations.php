@@ -7,6 +7,21 @@ use Closure;
 
 trait HasCustomRelations
 {
+
+  /**
+   * Create a new model instance for a related model.
+   *
+   * @param  string  $class
+   * @return mixed
+   */
+  protected function newRelatedInstance($class)
+  {
+      return tap(new $class, function ($instance) {
+          if (! $instance->getConnectionName()) {
+              $instance->setConnection($this->connection);
+          }
+      });
+  }
     /**
      * Define a custom relationship.
      *
@@ -15,11 +30,13 @@ trait HasCustomRelations
      * @param  string  $eagerConstraints
      * @return \App\Services\Database\Relations\Custom
      */
-    public function custom($related, Closure $baseConstraints, Closure $eagerConstraints)
+    public function custom($related, Closure $baseConstraints, Closure $eagerConstraints, array $eagerParentRelations = null)
     {
-        $instance = new $related;
+        $instance = $this->newRelatedInstance($related);
         $query = $instance->newQuery();
 
-        return new Custom($query, $this, $baseConstraints, $eagerConstraints);
+        return new Custom($query, $this, $baseConstraints, $eagerConstraints, $eagerParentRelations);
     }
+
+
 }
