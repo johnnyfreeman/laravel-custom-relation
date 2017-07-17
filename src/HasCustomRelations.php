@@ -30,12 +30,12 @@ trait HasCustomRelations
      * @param  string  $eagerConstraints
      * @return \App\Services\Database\Relations\Custom
      */
-    public function custom($related, Closure $baseConstraints, Closure $eagerConstraints, array $eagerParentRelations = null)
+    public function custom($related, Closure $baseConstraints, Closure $eagerConstraints,  array $eagerParentRelations = null, string $localKey = null)
     {
         $instance = $this->newRelatedInstance($related);
         $query = $instance->newQuery();
 
-        return new Custom($query, $this, $baseConstraints, $eagerConstraints, $eagerParentRelations);
+        return new Custom($query, $this, $baseConstraints, $eagerConstraints, $eagerParentRelations, $localKey);
     }
 
 
