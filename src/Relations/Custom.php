@@ -42,7 +42,9 @@ class Custom extends Relation
      * @return void
      */
 
-    public function __construct(Builder $query, Model $parent, Closure $baseConstraints, Closure $eagerConstraints, $modelKeys, $resultKeys)
+     protected $resultIsPlural;
+
+    public function __construct(Builder $query, Model $parent, Closure $baseConstraints, Closure $eagerConstraints, $modelKeys, $resultKeys, $resultIsPlural = true)
     {
         $this->baseConstraints = $baseConstraints;
         $this->eagerConstraints = $eagerConstraints;
@@ -118,6 +120,10 @@ class Custom extends Relation
             if (isset($dictionary[$key])) {
                
                 $collection = $this->related->newCollection($dictionary[$key]);
+
+                if( !$this->resultIsPlural ) {
+                    $collection = $collection->first();
+                }
                 $model->setRelation($relation, $collection);
             }
         }
