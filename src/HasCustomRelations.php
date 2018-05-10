@@ -15,11 +15,11 @@ trait HasCustomRelations
      * @param  string  $eagerConstraints
      * @return \App\Services\Database\Relations\Custom
      */
-    public function custom($related, Closure $baseConstraints, Closure $eagerConstraints)
+    public function custom($related, Closure $baseConstraints, Closure $eagerConstraints, $modelKeys, $resultKeys)
     {
         $instance = new $related;
         $query = $instance->newQuery();
 
-        return new Custom($query, $this, $baseConstraints, $eagerConstraints);
+        return new Custom($query, $this, $baseConstraints, $eagerConstraints, $modelKeys, $resultKeys);
     }
 }

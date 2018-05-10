@@ -7,9 +7,18 @@ use Illuminate\Database\Eloquent\Relations\Relation;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\DB;
 
 class Custom extends Relation
 {
+    /**
+     * Undocumented variable
+     *
+     * @var string
+     */
+    protected $accessor = 'relation_key';
+    protected $modelKeys;
+    protected $resultKeys;
     /**
      * The baseConstraints callback
      *
@@ -32,10 +41,14 @@ class Custom extends Relation
      * @param  string  $baseConstraints
      * @return void
      */
-    public function __construct(Builder $query, Model $parent, Closure $baseConstraints, Closure $eagerConstraints)
+
+    public function __construct(Builder $query, Model $parent, Closure $baseConstraints, Closure $eagerConstraints, $modelKeys, $resultKeys)
     {
         $this->baseConstraints = $baseConstraints;
         $this->eagerConstraints = $eagerConstraints;
+
+        $this->modelKeys = is_array($modelKeys) ? $modelKeys : [$modelKeys];
+        $this->resultKeys = is_array($resultKeys) ? $resultKeys : [$resultKeys];
 
         parent::__construct($query, $parent);
     }
@@ -47,9 +60,15 @@ class Custom extends Relation
      */
     public function addConstraints()
     {
-        call_user_func($this->baseConstraints, $this);
+        if (static::$constraints) {
+            call_user_func($this->baseConstraints, $this);
+        }
     }
 
+    public function getKeys(array $models, $key = null)
+    {
+        return parent::getKeys($models, $key);
+    }
     /**
      * Set the constraints for an eager load of the relation.
      *
@@ -70,10 +89,11 @@ class Custom extends Relation
      */
     public function initRelation(array $models, $relation)
     {
+        
         foreach ($models as $model) {
             $model->setRelation($relation, $this->related->newCollection());
         }
-
+        
         return $models;
     }
 
@@ -93,14 +113,39 @@ class Custom extends Relation
         // children back to their parent using the dictionary and the keys on the
         // the parent models. Then we will return the hydrated models back out.
         foreach ($models as $model) {
-            if (isset($dictionary[$key = $model->getKey()])) {
+            $key = $this->getModelRelationshipKey($model);
+            
+            if (isset($dictionary[$key])) {
+               
                 $collection = $this->related->newCollection($dictionary[$key]);
-
                 $model->setRelation($relation, $collection);
             }
         }
-
+        // dd2($models);
         return $models;
+    }
+    
+    protected function getModelRelationshipKey($model)
+    {
+        $outputKey = '';
+        foreach ($this->modelKeys as $key) {
+            $outputKey .=$model->$key.',';
+        }
+        return substr($outputKey, 0, -1);
+    }
+
+    protected function buildDictionary(Collection $results)
+    {
+        // First we will build a dictionary of child models keyed by the foreign key
+        // of the relation so that we will easily and quickly match them to their
+        // parents without having a possibly slow inner loops for every models.
+        $dictionary = [];
+
+        foreach ($results as $result) {
+            $dictionary[$result->{$this->accessor}][] = $result;
+        }
+
+        return $dictionary;
     }
 
     /**
@@ -132,7 +177,8 @@ class Custom extends Relation
 
         $builder = $this->query->applyScopes();
 
-        $models = $builder->addSelect($columns)->getModels();
+        $models = $builder->addSelect($columns);
+        $models = $builder->addSelect($this->aliasedPivotColumns())->getModels();
 
         // If we actually found models we will also eager load any relationships that
         // have been specified as needing to be eager loaded. This will solve the
@@ -142,5 +188,14 @@ class Custom extends Relation
         }
 
         return $this->related->newCollection($models);
+    }
+
+    
+
+    protected function aliasedPivotColumns()
+    {
+        $resultKeys =implode(',', $this->resultKeys);
+        return DB::raw("CONCAT_WS (',',$resultKeys) as {$this->accessor}");
+        // return ["CONCAT ($resultKeys) as {$this->accessor}"];
     }
 }
