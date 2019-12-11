@@ -96,7 +96,6 @@ class Custom extends Relation
     */
     public function match(array $models, Collection $results, $relation)
     {
-        //dd($models, $relation);
         $dictionary = $this->buildDictionary($results, $models);
         // Once we have an array dictionary of child objects we can easily match the
         // children back to their parent using the dictionary and the keys on the
@@ -119,7 +118,6 @@ class Custom extends Relation
     */
     protected function buildDictionary(Collection $results, $models)
     {
-        //dd($results);
         // First we will build a dictionary of child models keyed by the foreign key
         // of the relation so that we will easily and quickly match them to their
         // parents without having a possibly slow inner loops for every models.
