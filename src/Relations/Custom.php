@@ -13,29 +13,40 @@ class Custom extends Relation
     /**
      * The baseConstraints callback
      *
-     * @var \Illuminate\Database\Eloquent\Model
+     * @var \Closure
      */
     protected $baseConstraints;
 
     /**
      * The eagerConstraints callback
      *
-     * @var \Illuminate\Database\Eloquent\Model
+     * @var \Closure
      */
     protected $eagerConstraints;
+
+
+    /**
+    * The eager constraints model matcher.
+    *
+    * @var \Closure
+    */
+    protected $eagerMatcher;
 
     /**
      * Create a new belongs to relationship instance.
      *
      * @param  \Illuminate\Database\Eloquent\Builder  $query
      * @param  \Illuminate\Database\Eloquent\Model  $parent
-     * @param  string  $baseConstraints
+     * @param  \Closure  $baseConstraints
+     * @param  \Closure  $eagerConstraints
+     * @param  \Closure  $eagerMatcher
      * @return void
      */
-    public function __construct(Builder $query, Model $parent, Closure $baseConstraints, Closure $eagerConstraints)
+    public function __construct(Builder $query, Model $parent, Closure $baseConstraints, Closure $eagerConstraints, Closure $eagerMatcher)
     {
         $this->baseConstraints = $baseConstraints;
         $this->eagerConstraints = $eagerConstraints;
+        $this->eagerMatcher = $eagerMatcher;
 
         parent::__construct($query, $parent);
     }
@@ -87,20 +98,7 @@ class Custom extends Relation
      */
     public function match(array $models, Collection $results, $relation)
     {
-        $dictionary = $this->buildDictionary($results);
-
-        // Once we have an array dictionary of child objects we can easily match the
-        // children back to their parent using the dictionary and the keys on the
-        // the parent models. Then we will return the hydrated models back out.
-        foreach ($models as $model) {
-            if (isset($dictionary[$key = $model->getKey()])) {
-                $collection = $this->related->newCollection($dictionary[$key]);
-
-                $model->setRelation($relation, $collection);
-            }
-        }
-
-        return $models;
+        return ($this->eagerMatcher)($models, $results, $relation, $this);
     }
 
     /**
