@@ -1,3 +1,5 @@
+> This repo was a bit of a science experiment to find a solution to [this issue](https://stackoverflow.com/questions/39213022/custom-laravel-relations). I now believe a better to handle custom relations is to create a new class possibly extending one of the existing classes.
+
 # Laravel Custom Relation
 
 A custom relation for when stock relations aren't enough.
